@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, Input, IconButton, Typography } from "@material-ui/core";
-import { db } from "./firebase";
+import {
+  FormControl,
+  Input,
+  IconButton,
+  Typography,
+  Collapse,
+} from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
+import { db, messaging } from "./firebase";
 import firebase from "firebase";
 import Message from "./Message";
 import FlipMove from "react-flip-move";
 import SendIcon from "@material-ui/icons/Send";
+import CloseIcon from "@material-ui/icons/Close";
 import "./App.css";
 
 function App() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [username, setUsername] = useState("");
+  const [notification, setNotification] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const sendMessage = (event) => {
     event.preventDefault();
@@ -39,8 +49,34 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    messaging.onMessage((payload) => {
+      setNotification(payload.notification);
+      setOpen(true);
+    });
+  }, []);
+
   return (
     <div className="App">
+      <Collapse in={open}>
+        <Alert
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          {notification?.title} : {notification?.body}
+        </Alert>
+      </Collapse>
+
       <img
         alt=""
         src="https://facebookbrand.com/wp-content/uploads/2020/10/Logo_Messenger_NewBlurple-399x399-1.png?w=100&h=100"
